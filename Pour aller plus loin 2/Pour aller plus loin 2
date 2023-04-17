@@ -1,0 +1,85 @@
+import hashlib
+import json
+
+# Fonction pour hasher un mot de passe
+def hash_password(password):
+    sha256 = hashlib.sha256()
+    sha256.update(password.encode('utf-8'))
+    return sha256.hexdigest()
+
+# Charger les mots de passe depuis le fichier
+def load_passwords():
+    try:
+        with open('passwords.json', 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+# Enregistrer les mots de passe dans le fichier
+def save_passwords(passwords):
+    with open('passwords.json', 'w') as f:
+        json.dump(passwords, f)
+
+# Vérifier si un mot de passe est valide
+def is_valid_password(password):
+    return (
+        len(password) >= 8 and
+        any(c.isupper() for c in password) and
+        any(c.islower() for c in password) and
+        any(c.isdigit() for c in password) and
+        any(c in '!@#$%^&*' for c in password)
+    )
+
+# Demander à l'utilisateur d'entrer un mot de passe
+def get_password():
+    while True:
+        password = input('Entrez un mot de passe : ')
+        if is_valid_password(password):
+            return password
+        else:
+            print('Le mot de passe doit contenir au moins 8 caractères, une lettre majuscule, une lettre minuscule, un chiffre et un caractère spécial (!@#$%^&*)')
+
+# Vérifier si le mot de passe est déjà enregistré
+def password_exists(password, passwords):
+    hashed_password = hash_password(password)
+    return hashed_password in passwords.values()
+
+# Ajouter un mot de passe au fichier
+def add_password(password, passwords):
+    hashed_password = hash_password(password)
+    if not password_exists(password, passwords):
+        passwords[hashed_password] = password
+        save_passwords(passwords)
+        print('Le mot de passe a été ajouté.')
+    else:
+        print('Le mot de passe existe déjà.')
+
+# Afficher tous les mots de passe enregistrés
+def list_passwords(passwords):
+    if len(passwords) == 0:
+        print('Il n\'y a aucun mot de passe enregistré.')
+    else:
+        print('Mots de passe enregistrés :')
+        for password in passwords.values():
+            print(password)
+
+# Charger les mots de passe existants depuis le fichier
+passwords = load_passwords()
+
+# Boucle principale du programme
+while True:
+    print('\nQue voulez-vous faire ?')
+    print('1. Ajouter un nouveau mot de passe')
+    print('2. Afficher tous les mots de passe enregistrés')
+    print('3. Quitter le programme')
+    choix = input('Votre choix : ')
+
+    if choix == '1':
+        password = get_password()
+        add_password(password, passwords)
+    elif choix == '2':
+        list_passwords(passwords)
+    elif choix == '3':
+        break
+    else:
+        print('Choix invalide.')

@@ -1,0 +1,66 @@
+import hashlib
+import json
+
+# Fonction pour hasher le mot de passe en utilisant l'algorithme SHA-256
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# Fonction pour enregistrer les mots de passe hachés dans un fichier
+def save_passwords(passwords):
+    with open("passwords.json", "w") as f:
+        json.dump(passwords, f)
+
+# Fonction pour charger les mots de passe hachés depuis un fichier
+def load_passwords():
+    try:
+        with open("passwords.json", "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+# Charger les mots de passe existants depuis un fichier
+passwords = load_passwords()
+
+# Boucle principale du programme
+while True:
+    # Demander à l'utilisateur ce qu'il veut faire
+    choice = input("Que voulez-vous faire ?\n1. Ajouter un mot de passe\n2. Afficher les mots de passe\n3. Quitter\nEntrez le numéro correspondant à votre choix : ")
+
+    # Ajouter un nouveau mot de passe
+    if choice == "1":
+        website = input("Entrez le nom du site web : ")
+        username = input("Entrez votre nom d'utilisateur : ")
+        password = input("Entrez votre mot de passe : ")
+
+        # Hacher le mot de passe
+        hashed_password = hash_password(password)
+
+        # Ajouter le mot de passe haché au dictionnaire
+        if website not in passwords:
+            passwords[website] = {}
+        passwords[website][username] = hashed_password
+
+        # Enregistrer les mots de passe hachés dans un fichier
+        save_passwords(passwords)
+
+        print("Le mot de passe a été ajouté avec succès.")
+
+    # Afficher les mots de passe
+    elif choice == "2":
+        if not passwords:
+            print("Aucun mot de passe enregistré.")
+        else:
+            print("Les mots de passe enregistrés sont :")
+            for website, logins in passwords.items():
+                print("Site web :", website)
+                for username, password in logins.items():
+                    print("Nom d'utilisateur :", username)
+                    print("Mot de passe haché :", password)
+
+    # Quitter le programme
+    elif choice == "3":
+        break
+
+    # Si l'utilisateur entre un choix invalide
+    else:
+        print("Choix invalide.")*
